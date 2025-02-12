@@ -1,0 +1,10 @@
+# Formatting, Linting, and Testing Dependencies
+pytest
+pytest-cov
+mypy
+ruff
+mock
+
+# Flask Dependencies
+flask
+flask-sqlalchemy
