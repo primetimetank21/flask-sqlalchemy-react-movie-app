@@ -8,3 +8,7 @@ mock
 # Flask Dependencies
 flask
 flask-sqlalchemy
+flask-login
+
+# API Endpoint Validation Dependencies
+marshmallow
