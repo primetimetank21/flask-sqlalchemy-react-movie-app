@@ -8,8 +8,8 @@ from flask_login import (  # type: ignore
 )
 from marshmallow import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
-from ..models import User, db
-from ..schemas import UserSchema
+from ..models import Movie, User, db
+from ..schemas import UserSchema, MovieSchema
 
 auth = Blueprint("auth", __name__)
 
@@ -102,4 +102,34 @@ def me():
             "message": "User found",
             "data": UserSchema(exclude=["password"]).dump(current_user),
         }
+    ), 200
+
+
+@auth.route("/add-movie", methods=["POST"])
+@login_required
+def add_movie():
+    movie_data = request.get_json()
+    if not movie_data:
+        return jsonify({"message": "No payload received"}), 400
+
+    try:
+        movie_schema = MovieSchema().load(movie_data)
+    except ValidationError as err:
+        return jsonify({"message": err.messages}), 400
+
+    movie = Movie(**movie_schema)
+    movie.user_id = current_user.id
+
+    db.session.add(movie)
+    db.session.commit()
+
+    return jsonify({"message": "Movie added", "data": MovieSchema().dump(movie)}), 201
+
+
+@auth.route("/view-movies", methods=["GET"])
+@login_required
+def view_movies():
+    movies = Movie.query.filter_by(user_id=current_user.id).all()
+    return jsonify(
+        {"message": "Movies found", "data": MovieSchema(many=True).dump(movies)}
     ), 200
